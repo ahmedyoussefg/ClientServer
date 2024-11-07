@@ -16,7 +16,8 @@ public class Client {
         BufferedReader bf = new BufferedReader(in);
         while (true) {
             System.out.println("Sending to Server..");
-            pr.println("Hello from client");
+            pr.println("Hello from client\r");
+            pr.println("\r");
             // message from server
             String msg = bf.readLine();
             if (msg != null) {

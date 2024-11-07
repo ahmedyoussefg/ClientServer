@@ -18,19 +18,15 @@ public class ClientHandler implements Runnable{
         try {
             while (true) {
                 String msg = bf.readLine();
-                // request message from the client
-                System.out.println("[REQUEST] " + msg);
-                String requestLine = msg;
                 if (msg == null) {
                     // disconnected
                     break;
                 }
-                if (bf.ready()){
-                    msg = bf.readLine();
-                    while (msg != null && !msg.isEmpty()) {
-                        System.out.println("[OPTIONAL] " + msg);
-                        msg = bf.readLine();
-                    }
+                // request message from the client
+                System.out.println("[REQUEST] " + msg);
+                String requestLine = msg;
+                while ((msg = bf.readLine()) != null && !msg.isEmpty()) {
+                    System.out.println("[OPTIONAL] " + msg);
                 }
                 String[] requestTokens = requestLine.split(" ");
                 if ("GET".equals(requestTokens[0])) {
