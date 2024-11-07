@@ -9,7 +9,7 @@ public class ClientHandler implements Runnable {
     private InputStreamReader in;
     private BufferedReader bf;
     private PrintWriter pr;
-    private static final String SERVER_DATA_ABSOLUTE_PATH = "src\\server\\serverdata\\";
+    private static final String SERVER_DATA_ABSOLUTE_PATH = "src/server/serverdata/";
 
     public ClientHandler(Socket socket) throws IOException {
         this.socket = socket;
@@ -37,7 +37,7 @@ public class ClientHandler implements Runnable {
                 if ("GET".equals(requestTokens[0])) {
                     this.handleGetRequest(requestTokens);
                 } else if ("POST".equals(requestTokens[0])) {
-                    this.handlePostRequest(requestTokens[1].split("\\\\")[1]);
+                    this.handlePostRequest(requestTokens[1].split("/")[1]);
                 } else {
                     pr.println("HTTP/1.1 400 Bad Request\r");
                 }
