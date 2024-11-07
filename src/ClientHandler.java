@@ -62,9 +62,9 @@ public class ClientHandler implements Runnable{
     }
 
     void handlePostRequest(String[] requestTokens, int contentLength) throws IOException {
-        DataInputStream dos = new DataInputStream(socket.getInputStream());
+        DataInputStream dis = new DataInputStream(socket.getInputStream());
         byte[] fileBytes = new byte[contentLength];
-        dos.readFully(fileBytes);
+        dis.readFully(fileBytes);
         try (FileOutputStream fos = new FileOutputStream(requestTokens[1])) {
             fos.write(fileBytes);
             pr.print("HTTP/1.1 200 OK\\r\\n");
