@@ -14,7 +14,7 @@ import java.util.Base64;
 import java.util.List;
 
 public class Client {
-    private static final String CLIENT_ABSOLUTE_PATH = "src\\client\\";
+    private static final String CLIENT_ABSOLUTE_PATH = "src/client/";
 
     public static void main(String[] args) throws IOException {
         // args will include hostName, portNumber
