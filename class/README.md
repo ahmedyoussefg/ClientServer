@@ -1,0 +1,1 @@
+## This directory will contain compiled `.class` files, but we keep them in `.gitignore`.
