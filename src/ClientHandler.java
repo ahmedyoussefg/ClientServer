@@ -25,10 +25,12 @@ public class ClientHandler implements Runnable{
                     // disconnected
                     break;
                 }
-                msg = bf.readLine();
-                while (msg != null && !msg.isEmpty()) {
-                    System.out.println("[OPTIONAL] " + msg);
+                if (bf.ready()){
                     msg = bf.readLine();
+                    while (msg != null && !msg.isEmpty()) {
+                        System.out.println("[OPTIONAL] " + msg);
+                        msg = bf.readLine();
+                    }
                 }
                 String[] requestTokens = requestLine.split(" ");
                 if ("GET".equals(requestTokens[0])) {
