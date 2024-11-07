@@ -2,12 +2,14 @@ package server;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.Base64;
 
-public class ClientHandler implements Runnable{
+public class ClientHandler implements Runnable {
     private Socket socket;
     private InputStreamReader in;
     private BufferedReader bf;
     private PrintWriter pr;
+    private static final String SERVER_DATA_ABSOLUTE_PATH = "src\\server\\serverdata\\";
 
     public ClientHandler(Socket socket) throws IOException {
         this.socket = socket;
@@ -15,6 +17,7 @@ public class ClientHandler implements Runnable{
         bf = new BufferedReader(in);
         pr = new PrintWriter(socket.getOutputStream(), true);
     }
+
     @Override
     public void run() {
         try {
@@ -34,7 +37,7 @@ public class ClientHandler implements Runnable{
                 if ("GET".equals(requestTokens[0])) {
                     this.handleGetRequest(requestTokens);
                 } else if ("POST".equals(requestTokens[0])) {
-                    this.handlePostRequest();
+                    this.handlePostRequest(requestTokens[1].split("\\\\")[1]);
                 } else {
                     pr.println("HTTP/1.1 400 Bad Request\r");
                 }
@@ -42,7 +45,7 @@ public class ClientHandler implements Runnable{
             bf.close();
             in.close();
             this.socket.close();
-        } catch(IOException e) {
+        } catch (IOException e) {
             System.out.println(e.getMessage());
         }
 
@@ -51,24 +54,16 @@ public class ClientHandler implements Runnable{
     void handleGetRequest(String[] requestTokens) {
     }
 
-    void handlePostRequest() throws IOException {
+    void handlePostRequest(String filePath) throws IOException {
         String msg = bf.readLine();
-        StringBuilder requestBody = new StringBuilder();
-        while (msg != null) {
-            requestBody.append(msg);
-            msg = bf.readLine();
+        byte[] fileContent = Base64.getDecoder().decode(msg);
+        try (FileOutputStream fos = new FileOutputStream(SERVER_DATA_ABSOLUTE_PATH + filePath)) {
+            fos.write(fileContent);
+            System.out.println("File written successfully.");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        // to avoid overwriting duplicates
-        String filename = System.currentTimeMillis() + "-" +
-                Thread.currentThread().threadId() + "_FILE";
-        File newFile = new File(filename);
-        if (newFile.createNewFile()) {
-            BufferedWriter bw = new BufferedWriter(new FileWriter(newFile));
-            bw.write(requestBody.toString());
-            bw.close();
-        }
-        else {
-            System.out.println("[ERROR] Server couldn't save file after POST request.");
-        }
+
+        pr.println("HTTP/1.1 200 OK");
     }
 }
