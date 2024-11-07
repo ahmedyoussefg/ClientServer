@@ -63,7 +63,6 @@ public class ClientHandler implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
         pr.println("HTTP/1.1 200 OK");
     }
 }
