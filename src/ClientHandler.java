@@ -30,17 +30,13 @@ public class ClientHandler implements Runnable{
                     System.out.println("[OPTIONAL] " + msg);
                     msg = bf.readLine();
                 }
-                if (msg == null) {
-                    // disconnected
-                    break;
-                }
                 String[] requestTokens = requestLine.split(" ");
                 if ("GET".equals(requestTokens[0])) {
                     this.handleGetRequest(requestTokens);
                 } else if ("POST".equals(requestTokens[0])) {
                     this.handlePostRequest();
                 } else {
-                    pr.println("HTTP/1.1 400 Bad Request");
+                    pr.println("HTTP/1.1 400 Bad Request\r");
                 }
             }
             bf.close();
