@@ -22,17 +22,29 @@ public class ClientHandler implements Runnable{
                     // disconnected
                     break;
                 }
+                int contentLength = 2048;
                 // request message from the client
                 System.out.println("[REQUEST] " + msg);
                 String requestLine = msg;
                 while ((msg = bf.readLine()) != null && !msg.isEmpty()) {
                     System.out.println("[OPTIONAL] " + msg);
+                    if (msg.contains("Content-Length")) {
+                        // Extract the value after "Content-Length: "
+                        String[] parts = msg.trim().split(":");
+                        if (parts.length == 2) {
+                            try {
+                                contentLength = Integer.parseInt(parts[1]);
+                            } catch (NumberFormatException e) {
+                                System.err.println("[ERROR] Invalid Content-Length format.");
+                            }
+                        }
+                    }
                 }
                 String[] requestTokens = requestLine.split(" ");
                 if ("GET".equals(requestTokens[0])) {
                     this.handleGetRequest(requestTokens);
                 } else if ("POST".equals(requestTokens[0])) {
-                    this.handlePostRequest();
+                    this.handlePostRequest(requestTokens, contentLength);
                 } else {
                     pr.println("HTTP/1.1 400 Bad Request\r");
                 }
@@ -49,24 +61,13 @@ public class ClientHandler implements Runnable{
     void handleGetRequest(String[] requestTokens) {
     }
 
-    void handlePostRequest() throws IOException {
-        String msg = bf.readLine();
-        StringBuilder requestBody = new StringBuilder();
-        while (msg != null) {
-            requestBody.append(msg);
-            msg = bf.readLine();
-        }
-        // to avoid overwriting duplicates
-        String filename = System.currentTimeMillis() + "-" +
-                Thread.currentThread().threadId() + "_FILE";
-        File newFile = new File(filename);
-        if (newFile.createNewFile()) {
-            BufferedWriter bw = new BufferedWriter(new FileWriter(newFile));
-            bw.write(requestBody.toString());
-            bw.close();
-        }
-        else {
-            System.out.println("[ERROR] Server couldn't save file after POST request.");
+    void handlePostRequest(String[] requestTokens, int contentLength) throws IOException {
+        DataInputStream dos = new DataInputStream(socket.getInputStream());
+        byte[] fileBytes = new byte[contentLength];
+        dos.readFully(fileBytes);
+        try (FileOutputStream fos = new FileOutputStream(requestTokens[1])) {
+            fos.write(fileBytes);
+            pr.print("HTTP/1.1 200 OK\\r\\n");
         }
     }
 }
