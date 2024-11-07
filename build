@@ -8,7 +8,9 @@ OUTPUT_DIR=./class
 
 
 # Compile the Java files
-javac "$SRC_DIR"*.java -d "$OUTPUT_DIR"
+javac "$SRC_DIR"/client/*.java -d "$OUTPUT_DIR"
+javac "$SRC_DIR"/server/*.java -d "$OUTPUT_DIR"
+javac "$SRC_DIR"/utils/*.java -d "$OUTPUT_DIR"
 
 # Check if compilation was successful
 if [ $? -eq 0 ]; then
