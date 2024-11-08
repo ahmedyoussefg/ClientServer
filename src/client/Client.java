@@ -2,10 +2,7 @@ package client;
 
 import utils.RequestsParsingHandler;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.file.Files;
@@ -38,11 +35,23 @@ public class Client {
             pr.println(request);
             String requestLine = request.split("\r\n")[0];
             String filePath = CLIENT_ABSOLUTE_PATH + requestLine.split(" ")[1];
-            sendFileContent(filePath, pr);
 
-            String msg = bf.readLine();
-            if (msg != null) {
-                System.out.println("Recieved from the server: " + msg);
+            if (requestLine.contains("POST")) {
+                sendFileContent(filePath, pr);
+                String msg = bf.readLine();
+                if (msg != null) {
+                    System.out.println("Recieved from the server: " + msg);
+                }
+            } else if (requestLine.contains("GET")) {
+                String msg = bf.readLine();
+                byte[] fileContent = Base64.getDecoder().decode(msg);
+                String fileName = requestLine.split(" ")[1].split("/")[1];
+                try (FileOutputStream fos = new FileOutputStream(CLIENT_ABSOLUTE_PATH + "/clientdata/" + fileName)) {
+                    fos.write(fileContent);
+                    System.out.println("File written successfully.");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
 

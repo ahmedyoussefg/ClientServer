@@ -2,6 +2,8 @@ package server;
 
 import java.io.*;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Base64;
 
 public class ClientHandler implements Runnable {
@@ -34,10 +36,11 @@ public class ClientHandler implements Runnable {
                     System.out.println("[OPTIONAL] " + msg);
                 }
                 String[] requestTokens = requestLine.split(" ");
+                String filePath = requestTokens[1].split("/")[1];
                 if ("GET".equals(requestTokens[0])) {
-                    this.handleGetRequest(requestTokens);
+                    this.handleGetRequest(filePath);
                 } else if ("POST".equals(requestTokens[0])) {
-                    this.handlePostRequest(requestTokens[1].split("/")[1]);
+                    this.handlePostRequest(filePath);
                 } else {
                     pr.println("HTTP/1.1 400 Bad Request\r");
                 }
@@ -51,7 +54,15 @@ public class ClientHandler implements Runnable {
 
     }
 
-    void handleGetRequest(String[] requestTokens) {
+    void handleGetRequest(String filePath) {
+        try {
+            byte[] fileContent = Files.readAllBytes(Paths.get(SERVER_DATA_ABSOLUTE_PATH + filePath));
+            String encodedFileContent = Base64.getEncoder().encodeToString(fileContent);
+            pr.println(encodedFileContent);
+            pr.println("HTTP/1.1 200 OK");
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     void handlePostRequest(String filePath) throws IOException {
