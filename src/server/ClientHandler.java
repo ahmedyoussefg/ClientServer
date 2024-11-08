@@ -55,11 +55,13 @@ public class ClientHandler implements Runnable {
     }
 
     void handleGetRequest(String filePath) {
+        pr.println("HTTP/1.1 200 OK\r");
+        pr.println("Content-Type: text/html\r");
+        pr.println("\r");
         try {
             byte[] fileContent = Files.readAllBytes(Paths.get(SERVER_DATA_ABSOLUTE_PATH + filePath));
             String encodedFileContent = Base64.getEncoder().encodeToString(fileContent);
             pr.println(encodedFileContent);
-            pr.println("HTTP/1.1 200 OK");
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }

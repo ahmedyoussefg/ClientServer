@@ -43,7 +43,10 @@ public class Client {
                     System.out.println("Recieved from the server: " + msg);
                 }
             } else if (requestLine.contains("GET")) {
-                String msg = bf.readLine();
+                String msg;
+                while ((msg = bf.readLine()) != null && !msg.isEmpty()) {
+                    System.out.println("[OPTIONAL] " + msg);
+                }
                 byte[] fileContent = Base64.getDecoder().decode(msg);
                 String fileName = requestLine.split(" ")[1].split("/")[1];
                 try (FileOutputStream fos = new FileOutputStream(CLIENT_ABSOLUTE_PATH + "/clientdata/" + fileName)) {
