@@ -16,3 +16,5 @@ GET data2.txt
 GET pic2.png
 
 GET index2.html
+
+GET index3.html
