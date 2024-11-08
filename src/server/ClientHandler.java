@@ -2,7 +2,9 @@ package server;
 
 import java.io.*;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Base64;
 
@@ -61,14 +63,16 @@ public class ClientHandler implements Runnable {
     }
 
     void handleGetRequest(String filePath) {
-        pr.println("HTTP/1.1 200 OK");
-        pr.println("Content-Type: text/html");
-        pr.println("");
-
         try {
-            byte[] fileContent = Files.readAllBytes(Paths.get(SERVER_DATA_ABSOLUTE_PATH + filePath));
-            String encodedFileContent = Base64.getEncoder().encodeToString(fileContent);
-            pr.println(encodedFileContent);
+            Path file = Paths.get(SERVER_DATA_ABSOLUTE_PATH + filePath);
+            pr.println("HTTP/1.1 200 OK");
+            String contentType = this.getContentType(filePath);
+            pr.println("Content-Type: " + contentType);
+            pr.println("Content-Length: " + Files.size(file));
+            pr.println("");
+            byte[] fileContent = Files.readAllBytes(file);
+            DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
+            dos.write(fileContent);
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
@@ -84,5 +88,21 @@ public class ClientHandler implements Runnable {
             e.printStackTrace();
         }
         pr.println("HTTP/1.1 200 OK");
+    }
+
+    String getContentType(String filePath) {
+        String contentType;
+        if (filePath.endsWith(".html") || filePath.endsWith(".htm")) {
+            contentType = "text/html";
+        } else if (filePath.endsWith(".txt")) {
+            contentType = "text/plain";
+        } else if (filePath.endsWith(".jpg") || filePath.endsWith(".jpeg")) {
+            contentType = "image/jpeg";
+        } else if (filePath.endsWith(".png")) {
+            contentType = "image/png";
+        } else {
+            contentType = "application/octet-stream";
+        }
+        return contentType;
     }
 }
