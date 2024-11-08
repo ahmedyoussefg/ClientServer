@@ -1,18 +1,18 @@
-POST clientdata/data.txt
+POST data.txt
 Host: localhost
 Content-Type: application/octet-stream
 
-POST clientdata/pic.png
+POST pic.png
 Host: localhost
 Content-Type: image/png
 
-POST clientdata/index.html
+POST index.html
 Host: localhost
 Content-Type: xml
 Connection: close
 
-GET serverdata/data2.txt
+GET data2.txt
 
-GET serverdata/pic2.png
+GET pic2.png
 
-GET serverdata/index2.html
+GET index2.html
