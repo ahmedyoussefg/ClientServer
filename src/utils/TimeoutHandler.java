@@ -2,9 +2,9 @@ package utils;
 
 public class TimeoutHandler {
     // Base timeout in milliseconds
-    private static final int BASE_TIMEOUT = 7000;
+    private static final int BASE_TIMEOUT = 30000;
     // Minimum timeout allowed in milliseconds
-    private static final int MIN_TIMEOUT = 1000;
+    private static final int MIN_TIMEOUT = 15000;
     private ThreadGroup threadGroup;
     public TimeoutHandler(ThreadGroup threadGroup) {
         this.threadGroup = threadGroup;
