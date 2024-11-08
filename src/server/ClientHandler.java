@@ -7,6 +7,7 @@ import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Time;
 import java.util.Base64;
 
 public class ClientHandler implements Runnable {
@@ -15,9 +16,11 @@ public class ClientHandler implements Runnable {
     private BufferedReader bf;
     private PrintWriter pr;
     private static final String SERVER_DATA_ABSOLUTE_PATH = "src/server/serverdata/";
+    private TimeoutHandler timeoutHandler;
 
-    public ClientHandler(Socket socket) throws IOException {
+    public ClientHandler(Socket socket, TimeoutHandler timeoutHandler) throws IOException {
         this.socket = socket;
+        this.timeoutHandler = timeoutHandler;
         in = new InputStreamReader(socket.getInputStream());
         bf = new BufferedReader(in);
         pr = new PrintWriter(socket.getOutputStream(), true);
@@ -27,7 +30,7 @@ public class ClientHandler implements Runnable {
     public void run() {
         try {
             while (true) {
-                this.socket.setSoTimeout(TimeoutHandler.calculateTimeout());
+                this.socket.setSoTimeout(timeoutHandler.calculateTimeout());
                 String request = bf.readLine();
                 String requestLine = request;
 
@@ -66,7 +69,7 @@ public class ClientHandler implements Runnable {
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
             }
-            System.out.println(e.getMessage());
+            System.out.println("[INFO] " + e.getMessage());
         }
 
     }

@@ -5,9 +5,12 @@ public class TimeoutHandler {
     private static final int BASE_TIMEOUT = 7000;
     // Minimum timeout allowed in milliseconds
     private static final int MIN_TIMEOUT = 1000;
-
-    public synchronized static int calculateTimeout() {
-        int activeConnections = Thread.activeCount() - 1;
+    private ThreadGroup threadGroup;
+    public TimeoutHandler(ThreadGroup threadGroup) {
+        this.threadGroup = threadGroup;
+    }
+    public synchronized int calculateTimeout() {
+        int activeConnections = this.threadGroup.activeCount();
         if (activeConnections <= 1) {
             return BASE_TIMEOUT;
         }
