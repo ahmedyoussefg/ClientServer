@@ -7,7 +7,6 @@ import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Time;
 import java.util.Base64;
 
 public class ClientHandler implements Runnable {
@@ -60,7 +59,6 @@ public class ClientHandler implements Runnable {
             in.close();
             this.socket.close();
         } catch (IOException e) {
-
             try {
                 socket.close();
                 bf.close();
@@ -75,22 +73,39 @@ public class ClientHandler implements Runnable {
 
     void handleGetRequest(String filePath) {
         try {
-            Path file = Paths.get(SERVER_DATA_ABSOLUTE_PATH + filePath);
-            pr.println("HTTP/1.1 200 OK");
-            String contentType = this.getContentType(filePath);
-            pr.println("Content-Type: " + contentType);
-            pr.println("Content-Length: " + Files.size(file));
-            pr.println("");
-            pr.flush();
-
-            byte[] fileContent = Files.readAllBytes(file);
-            OutputStream stream = socket.getOutputStream();
-            stream.write(fileContent);
-            stream.write("\0".getBytes()); // null byte to indicate end of file
-            stream.flush();
+            Path path = Paths.get(SERVER_DATA_ABSOLUTE_PATH + filePath);
+            if (!Files.exists(path)) {
+                handleFileNotFound();
+            } else {
+                getExistingFile(filePath, path);
+            }
         } catch (Exception e) {
             System.out.println("[ERROR] " + e.getMessage());
         }
+    }
+
+    private void getExistingFile(String filePath, Path path) throws IOException {
+        pr.println("HTTP/1.1 200 OK");
+        String contentType = this.getContentType(filePath);
+        pr.println("Content-Type: " + contentType);
+        pr.println("Content-Length: " + Files.size(path));
+        pr.println("");
+        pr.flush();
+
+        byte[] fileContent = Files.readAllBytes(path);
+        OutputStream stream = socket.getOutputStream();
+        stream.write(fileContent);
+        stream.write("\0".getBytes()); // null byte to indicate end of file
+        stream.flush();
+    }
+
+    private void handleFileNotFound() {
+        pr.println("HTTP/1.1 404 Not Found");
+        pr.println("Content-Type: text/html");
+        pr.println("Content-Length: " + 0);
+        pr.println("");
+        pr.println("404 Not Found");
+        pr.flush();
     }
 
     void handlePostRequest(String filePath) throws IOException {
