@@ -1,5 +1,2 @@
 #!/bin/bash
-
-# Start the client
-
-java -cp ./class Client
+java client.Client $1 $2
