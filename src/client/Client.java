@@ -16,21 +16,19 @@ public class Client {
     private static final String CLIENT_ABSOLUTE_DATA_PATH = CLIENT_ABSOLUTE_PATH + "/clientdata/";
 
     public static void main(String[] args) throws IOException {
-
-        // args will include hostName, portNumber
-        String hostName = InetAddress.getLocalHost().getHostName();
-        InetAddress hostAddr = InetAddress.getByName(hostName);
-        System.out.println("[INFO] Client on " + hostAddr.getHostName());
-
+        if (args.length != 2) {
+            System.out.println("Usage: java Client <server_ip> <port_number>");
+            return;
+        }
+        String serverIp = args[0];
         // portNumber should be same as the server
-        int portNumber = 8080;
-        Socket s = new Socket(hostName, portNumber);
+        int portNumber = Integer.parseInt(args[1]);
+        Socket s = new Socket(serverIp, portNumber);
+        System.out.println("[INFO] Connected to server at " + serverIp + ":" + portNumber);
 
-        // send to server
         PrintWriter pr = new PrintWriter(s.getOutputStream(), true);
         InputStreamReader in = new InputStreamReader(s.getInputStream());
         BufferedReader bf = new BufferedReader(in);
-
 
         List<String> requests = RequestsParsingHandler.readRequests("requests.txt");
 
