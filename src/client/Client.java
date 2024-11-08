@@ -12,7 +12,7 @@ import java.util.List;
 
 public class Client {
 
-    private static final String CLIENT_ABSOLUTE_PATH = "src/client/";
+    private static final String CLIENT_ABSOLUTE_PATH = "src/client";
     private static final String CLIENT_ABSOLUTE_DATA_PATH = CLIENT_ABSOLUTE_PATH + "/clientdata/";
 
     public static void main(String[] args) throws IOException {
@@ -52,7 +52,7 @@ public class Client {
         pr.println(request);
 
         if ("POST".equals(method)) {
-            sendFileContent(CLIENT_ABSOLUTE_PATH + filePath, pr);
+            sendFileContent(CLIENT_ABSOLUTE_DATA_PATH + filePath, pr);
             String response = bf.readLine();
             if (response != null) {
                 System.out.println(response);

@@ -24,22 +24,28 @@ public class ClientHandler implements Runnable {
     public void run() {
         try {
             while (true) {
-                String msg = bf.readLine();
-                if (msg == null) {
+                String request = bf.readLine();
+                String requestLine = request;
+
+                if (requestLine == null) {
                     // disconnected
                     break;
                 }
+
                 // request message from the client
-                System.out.println("[REQUEST] " + msg);
-                String requestLine = msg;
-                while ((msg = bf.readLine()) != null && !msg.isEmpty()) {
-                    System.out.println("[OPTIONAL] " + msg);
+                System.out.println(requestLine);
+
+                while ((request = bf.readLine()) != null && !request.isEmpty()) {
+                    System.out.println(request);
                 }
+
                 String[] requestTokens = requestLine.split(" ");
-                String filePath = requestTokens[1].split("/")[1];
-                if ("GET".equals(requestTokens[0])) {
+                String method = requestTokens[0];
+                String filePath = requestTokens[1];
+
+                if ("GET".equals(method)) {
                     this.handleGetRequest(filePath);
-                } else if ("POST".equals(requestTokens[0])) {
+                } else if ("POST".equals(method)) {
                     this.handlePostRequest(filePath);
                 } else {
                     pr.println("HTTP/1.1 400 Bad Request\r");
