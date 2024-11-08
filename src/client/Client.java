@@ -36,7 +36,7 @@ public class Client {
 
         for (String request : requests) {
             System.out.println("Sending to Server..");
-            processRequest(request, pr, bf);
+            processRequest(request, pr, bf, s);
         }
 
         bf.close();
@@ -44,7 +44,8 @@ public class Client {
         s.close();
     }
 
-    private static void processRequest(String request, PrintWriter pr, BufferedReader bf) throws IOException {
+    private static void processRequest(String request, PrintWriter pr,
+                                       BufferedReader bf, Socket socket) throws IOException {
         String requestLine = request.split("\r\n")[0];
         String method = requestLine.split(" ")[0];
         String filePath = requestLine.split(" ")[1];
@@ -58,17 +59,19 @@ public class Client {
                 System.out.println(response);
             }
         } else if ("GET".equals(method)) {
-            handleGetResponse(bf, filePath);
+            handleGetResponse(bf, filePath, socket);
         }
     }
 
-    private static void handleGetResponse(BufferedReader bf, String filePath) throws IOException {
+    private static void handleGetResponse(BufferedReader bf,
+                                          String filePath, Socket socket) throws IOException {
         String response;
         while ((response = bf.readLine()) != null && !response.isEmpty()) {
-             System.out.println(response);
+            System.out.println(response);
         }
 
-        byte[] fileContent = Base64.getDecoder().decode(bf.readLine());
+        byte[] fileContent = readSocketOutputStream(socket);
+
         String[] pathSplit = filePath.split("/");
         String fileName = pathSplit[pathSplit.length - 1];
 
@@ -78,6 +81,29 @@ public class Client {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private static byte[] readSocketOutputStream(Socket socket) throws IOException {
+
+        InputStream stream = socket.getInputStream();
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        byte[] buffer = new byte[4096]; // buffer to read chunks of data
+        int bytesRead;
+
+        while ((bytesRead = stream.read(buffer)) != -1) {
+            byteArrayOutputStream.write(buffer, 0, bytesRead);
+
+            // Check if the last byte received is a null byte (\0)
+            if (bytesRead > 0 && buffer[bytesRead - 1] == 0) {
+                byte[] receivedBytes = byteArrayOutputStream.toByteArray();
+                // Exclude the null byte before stopping
+                byteArrayOutputStream.reset();
+                byteArrayOutputStream.write(receivedBytes, 0, receivedBytes.length - 1);
+                break; // Stop reading
+            }
+        }
+
+        return byteArrayOutputStream.toByteArray();
     }
 
     private static void sendFileContent(String filePath, PrintWriter pr) {

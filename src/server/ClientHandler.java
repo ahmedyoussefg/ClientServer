@@ -2,7 +2,6 @@ package server;
 
 import java.io.*;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -70,9 +69,13 @@ public class ClientHandler implements Runnable {
             pr.println("Content-Type: " + contentType);
             pr.println("Content-Length: " + Files.size(file));
             pr.println("");
+            pr.flush();
+
             byte[] fileContent = Files.readAllBytes(file);
-            DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
-            dos.write(fileContent);
+            OutputStream stream = socket.getOutputStream();
+            stream.write(fileContent);
+            stream.write("\0".getBytes()); // null byte to indicate end of file
+            stream.flush();
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
