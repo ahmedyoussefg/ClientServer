@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# Set the source directory containing Java files
+SRC_DIR=./src/
+
+# Set the output directory for compiled classes
+OUTPUT_DIR=./class
+
+
+# Compile the Java files
+javac "$SRC_DIR"*.java -d "$OUTPUT_DIR"
+
+# Check if compilation was successful
+if [ $? -eq 0 ]; then
+    echo "Compilation successful!"
+else
+    echo "Compilation failed."
+fi
+
