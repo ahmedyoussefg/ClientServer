@@ -11,16 +11,21 @@ import java.util.Base64;
 import java.util.List;
 
 public class Client {
+
     private static final String CLIENT_ABSOLUTE_PATH = "src/client/";
+    private static final String CLIENT_ABSOLUTE_DATA_PATH = CLIENT_ABSOLUTE_PATH + "/clientdata/";
 
     public static void main(String[] args) throws IOException {
+
         // args will include hostName, portNumber
         String hostName = InetAddress.getLocalHost().getHostName();
         InetAddress hostAddr = InetAddress.getByName(hostName);
         System.out.println("Client on " + hostAddr.getHostName());
+
         // portNumber should be same as the server
         int portNumber = 8080;
         Socket s = new Socket(hostName, portNumber);
+
         // send to server
         PrintWriter pr = new PrintWriter(s.getOutputStream(), true);
         InputStreamReader in = new InputStreamReader(s.getInputStream());
@@ -31,36 +36,48 @@ public class Client {
 
         for (String request : requests) {
             System.out.println("Sending to Server..");
-
-            pr.println(request);
-            String requestLine = request.split("\r\n")[0];
-            String filePath = CLIENT_ABSOLUTE_PATH + requestLine.split(" ")[1];
-
-            if (requestLine.contains("POST")) {
-                sendFileContent(filePath, pr);
-                String msg = bf.readLine();
-                if (msg != null) {
-                    System.out.println("Recieved from the server: " + msg);
-                }
-            } else if (requestLine.contains("GET")) {
-                String msg;
-                while ((msg = bf.readLine()) != null && !msg.isEmpty()) {
-                    System.out.println("[OPTIONAL] " + msg);
-                }
-                byte[] fileContent = Base64.getDecoder().decode(msg);
-                String fileName = requestLine.split(" ")[1].split("/")[1];
-                try (FileOutputStream fos = new FileOutputStream(CLIENT_ABSOLUTE_PATH + "/clientdata/" + fileName)) {
-                    fos.write(fileContent);
-                    System.out.println("File written successfully.");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+            processRequest(request, pr, bf);
         }
 
         bf.close();
         in.close();
         s.close();
+    }
+
+    private static void processRequest(String request, PrintWriter pr, BufferedReader bf) throws IOException {
+        String requestLine = request.split("\r\n")[0];
+        String method = requestLine.split(" ")[0];
+        String filePath = requestLine.split(" ")[1];
+
+        pr.println(request);
+
+        if ("POST".equals(method)) {
+            sendFileContent(CLIENT_ABSOLUTE_PATH + filePath, pr);
+            String response = bf.readLine();
+            if (response != null) {
+                System.out.println(response);
+            }
+        } else if ("GET".equals(method)) {
+            handleGetResponse(bf, filePath);
+        }
+    }
+
+    private static void handleGetResponse(BufferedReader bf, String filePath) throws IOException {
+        String response;
+        while ((response = bf.readLine()) != null && !response.isEmpty()) {
+             System.out.println(response);
+        }
+
+        byte[] fileContent = Base64.getDecoder().decode(bf.readLine());
+        String[] pathSplit = filePath.split("/");
+        String fileName = pathSplit[pathSplit.length - 1];
+
+        try (FileOutputStream fos = new FileOutputStream(CLIENT_ABSOLUTE_DATA_PATH + fileName)) {
+            fos.write(fileContent);
+            System.out.println("File written successfully.");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private static void sendFileContent(String filePath, PrintWriter pr) {
