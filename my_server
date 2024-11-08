@@ -1,5 +1,2 @@
 #!/bin/bash
-
-# Start the server
-
-java -cp ./class Server
+java server.Server $1
