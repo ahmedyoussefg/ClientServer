@@ -34,10 +34,10 @@ public class ClientHandler implements Runnable {
                 }
 
                 // request message from the client
-                System.out.println(requestLine);
+                System.out.println("[REQUEST] " + requestLine);
 
                 while ((request = bf.readLine()) != null && !request.isEmpty()) {
-                    System.out.println(request);
+                    System.out.println("[OPTIONAL] " + request);
                 }
 
                 String[] requestTokens = requestLine.split(" ");
@@ -77,7 +77,7 @@ public class ClientHandler implements Runnable {
             stream.write("\0".getBytes()); // null byte to indicate end of file
             stream.flush();
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            System.out.println("[ERROR] " + e.getMessage());
         }
     }
 
@@ -86,7 +86,7 @@ public class ClientHandler implements Runnable {
         byte[] fileContent = Base64.getDecoder().decode(msg);
         try (FileOutputStream fos = new FileOutputStream(SERVER_DATA_ABSOLUTE_PATH + filePath)) {
             fos.write(fileContent);
-            System.out.println("File written successfully.");
+            System.out.println("[INFO] File written successfully.");
         } catch (IOException e) {
             e.printStackTrace();
         }

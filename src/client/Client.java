@@ -20,7 +20,7 @@ public class Client {
         // args will include hostName, portNumber
         String hostName = InetAddress.getLocalHost().getHostName();
         InetAddress hostAddr = InetAddress.getByName(hostName);
-        System.out.println("Client on " + hostAddr.getHostName());
+        System.out.println("[INFO] Client on " + hostAddr.getHostName());
 
         // portNumber should be same as the server
         int portNumber = 8080;
@@ -35,7 +35,7 @@ public class Client {
         List<String> requests = RequestsParsingHandler.readRequests("requests.txt");
 
         for (String request : requests) {
-            System.out.println("Sending to Server..");
+            System.out.println("[INFO] Sending to Server..");
             processRequest(request, pr, bf, s);
         }
 
@@ -56,7 +56,7 @@ public class Client {
             sendFileContent(CLIENT_ABSOLUTE_DATA_PATH + filePath, pr);
             String response = bf.readLine();
             if (response != null) {
-                System.out.println(response);
+                System.out.println("[RESPONSE] " + response);
             }
         } else if ("GET".equals(method)) {
             handleGetResponse(bf, filePath, socket);
@@ -67,7 +67,7 @@ public class Client {
                                           String filePath, Socket socket) throws IOException {
         String response;
         while ((response = bf.readLine()) != null && !response.isEmpty()) {
-            System.out.println(response);
+            System.out.println("[RESPONSE] " + response);
         }
 
         byte[] fileContent = readSocketOutputStream(socket);
@@ -77,7 +77,7 @@ public class Client {
 
         try (FileOutputStream fos = new FileOutputStream(CLIENT_ABSOLUTE_DATA_PATH + fileName)) {
             fos.write(fileContent);
-            System.out.println("File written successfully.");
+            System.out.println("[INFO] File written successfully.");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -112,7 +112,7 @@ public class Client {
             String encodedFileContent = Base64.getEncoder().encodeToString(fileContent);
             pr.println(encodedFileContent);
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            System.out.println("[ERROR] " + e.getMessage());
         }
     }
 }
