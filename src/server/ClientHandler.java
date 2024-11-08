@@ -1,10 +1,13 @@
 package server;
 
+import utils.TimeoutHandler;
+
 import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Time;
 import java.util.Base64;
 
 public class ClientHandler implements Runnable {
@@ -25,6 +28,7 @@ public class ClientHandler implements Runnable {
     public void run() {
         try {
             while (true) {
+                this.socket.setSoTimeout(TimeoutHandler.calculateTimeout());
                 String request = bf.readLine();
                 String requestLine = request;
 
@@ -56,6 +60,14 @@ public class ClientHandler implements Runnable {
             in.close();
             this.socket.close();
         } catch (IOException e) {
+
+            try {
+                socket.close();
+                bf.close();
+                in.close();
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
             System.out.println(e.getMessage());
         }
 
