@@ -91,18 +91,13 @@ public class ClientHandler implements Runnable {
     }
 
     String getContentType(String filePath) {
-        String contentType;
-        if (filePath.endsWith(".html") || filePath.endsWith(".htm")) {
-            contentType = "text/html";
-        } else if (filePath.endsWith(".txt")) {
-            contentType = "text/plain";
-        } else if (filePath.endsWith(".jpg") || filePath.endsWith(".jpeg")) {
-            contentType = "image/jpeg";
-        } else if (filePath.endsWith(".png")) {
-            contentType = "image/png";
-        } else {
-            contentType = "application/octet-stream";
-        }
-        return contentType;
+        int lastDotIndex = filePath.lastIndexOf('.');
+        return switch (filePath.substring(lastDotIndex)) {
+            case ".html", ".htm" -> "text/html";
+            case ".txt" -> "text/plain";
+            case ".jpg", ".jpeg" -> "image/jpeg";
+            case ".png" -> "image/png";
+            default -> "application/octet-stream";
+        };
     }
 }
