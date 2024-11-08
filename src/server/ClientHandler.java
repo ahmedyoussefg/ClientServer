@@ -1,5 +1,7 @@
 package server;
 
+import utils.TimeoutHandler;
+
 import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
@@ -25,6 +27,7 @@ public class ClientHandler implements Runnable {
     public void run() {
         try {
             while (true) {
+                this.socket.setSoTimeout(TimeoutHandler.calculateTimeout());
                 String request = bf.readLine();
                 String requestLine = request;
 
@@ -34,10 +37,10 @@ public class ClientHandler implements Runnable {
                 }
 
                 // request message from the client
-                System.out.println(requestLine);
+                System.out.println("[REQUEST] " + requestLine);
 
                 while ((request = bf.readLine()) != null && !request.isEmpty()) {
-                    System.out.println(request);
+                    System.out.println("[OPTIONAL] " + request);
                 }
 
                 String[] requestTokens = requestLine.split(" ");
@@ -56,6 +59,13 @@ public class ClientHandler implements Runnable {
             in.close();
             this.socket.close();
         } catch (IOException e) {
+            try {
+                socket.close();
+                bf.close();
+                in.close();
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
             System.out.println(e.getMessage());
         }
 
@@ -65,12 +75,12 @@ public class ClientHandler implements Runnable {
         try {
             Path path = Paths.get(SERVER_DATA_ABSOLUTE_PATH + filePath);
             if (!Files.exists(path)) {
-                handleFileNotFound(filePath);
+                handleFileNotFound();
             } else {
                 getExistingFile(filePath, path);
             }
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            System.out.println("[ERROR] " + e.getMessage());
         }
     }
 
@@ -89,10 +99,9 @@ public class ClientHandler implements Runnable {
         stream.flush();
     }
 
-    private void handleFileNotFound(String filePath) {
-        String contentType = this.getContentType(filePath);
+    private void handleFileNotFound() {
         pr.println("HTTP/1.1 404 Not Found");
-        pr.println("Content-Type: " + contentType);
+        pr.println("Content-Type: text/html");
         pr.println("Content-Length: " + 0);
         pr.println("");
         pr.println("404 Not Found");
@@ -104,7 +113,7 @@ public class ClientHandler implements Runnable {
         byte[] fileContent = Base64.getDecoder().decode(msg);
         try (FileOutputStream fos = new FileOutputStream(SERVER_DATA_ABSOLUTE_PATH + filePath)) {
             fos.write(fileContent);
-            System.out.println("File written successfully.");
+            System.out.println("[INFO] File written successfully.");
         } catch (IOException e) {
             e.printStackTrace();
         }
