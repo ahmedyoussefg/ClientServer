@@ -7,7 +7,6 @@ import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Time;
 import java.util.Base64;
 
 public class ClientHandler implements Runnable {
@@ -30,26 +29,30 @@ public class ClientHandler implements Runnable {
     public void run() {
         try {
             while (true) {
+                // set the socket timeout based on dynamic timeout handler
                 this.socket.setSoTimeout(timeoutHandler.calculateTimeout());
                 String request = bf.readLine();
                 String requestLine = request;
 
                 if (requestLine == null) {
-                    // disconnected
+                    // disconnected, if no request is received
                     break;
                 }
 
-                // request message from the client
+                // display request message from the client
                 System.out.println("[REQUEST] " + requestLine);
 
+                // read optional headers from the client message
                 while ((request = bf.readLine()) != null && !request.isEmpty()) {
                     System.out.println("[OPTIONAL] " + request);
                 }
 
+                // parse request line to extract method and file path
                 String[] requestTokens = requestLine.split(" ");
                 String method = requestTokens[0];
                 String filePath = requestTokens[1];
 
+                // handle get/post requests
                 if ("GET".equals(method)) {
                     this.handleGetRequest(filePath);
                 } else if ("POST".equals(method)) {
@@ -58,6 +61,7 @@ public class ClientHandler implements Runnable {
                     pr.println("HTTP/1.1 400 Bad Request\r");
                 }
             }
+            // close resources when done
             bf.close();
             in.close();
             this.socket.close();
@@ -74,12 +78,15 @@ public class ClientHandler implements Runnable {
 
     }
 
+    // handle get for retrieving a file
     void handleGetRequest(String filePath) {
         try {
             Path path = Paths.get(SERVER_DATA_ABSOLUTE_PATH + filePath);
             if (!Files.exists(path)) {
+                // case not found
                 handleFileNotFound();
             } else {
+                // case found
                 getExistingFile(filePath, path);
             }
         } catch (Exception e) {
@@ -88,6 +95,7 @@ public class ClientHandler implements Runnable {
     }
 
     private void getExistingFile(String filePath, Path path) throws IOException {
+        // send 200 OK status and content details
         pr.println("HTTP/1.1 200 OK");
         String contentType = this.getContentType(filePath);
         pr.println("Content-Type: " + contentType);
@@ -95,6 +103,7 @@ public class ClientHandler implements Runnable {
         pr.println("");
         pr.flush();
 
+        // read and send file content as bytes
         byte[] fileContent = Files.readAllBytes(path);
         OutputStream stream = socket.getOutputStream();
         stream.write(fileContent);
@@ -102,6 +111,7 @@ public class ClientHandler implements Runnable {
         stream.flush();
     }
 
+    // handle a 404 error by sending "Not Found" response
     private void handleFileNotFound() {
         pr.println("HTTP/1.1 404 Not Found");
         pr.println("Content-Type: text/html");
@@ -111,18 +121,23 @@ public class ClientHandler implements Runnable {
         pr.flush();
     }
 
+    // handle POST request for saving a file to the server
     void handlePostRequest(String filePath) throws IOException {
+        // receive the file content as a Base64 encoded string
         String msg = bf.readLine();
         byte[] fileContent = Base64.getDecoder().decode(msg);
         try (FileOutputStream fos = new FileOutputStream(SERVER_DATA_ABSOLUTE_PATH + filePath)) {
+            // write the decoded content to the specified file path
             fos.write(fileContent);
             System.out.println("[INFO] File written successfully.");
         } catch (IOException e) {
             e.printStackTrace();
         }
+        // Send 200 OK response
         pr.println("HTTP/1.1 200 OK");
     }
 
+    // determine the content type of a file based on its extension
     String getContentType(String filePath) {
         int lastDotIndex = filePath.lastIndexOf('.');
         return switch (filePath.substring(lastDotIndex)) {
